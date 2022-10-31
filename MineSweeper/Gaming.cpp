@@ -32,30 +32,7 @@ void BloPainting(PAINTSTRUCT *ps, HDC *hdc, HDC *hdcMem)
 		for (int j = 1; j <= game_map.size_col; j++)
 		{
 			int k = 0;
-			if (game_map._vis[i][j] == true)
-			{
-				int kk = game_map._Block[i][j];
-				if (kk == -1)
-				{
-					k = 11;
-				}
-				else if (kk == 0)
-				{
-					k = 10;
-				}
-				else if (kk == -3)
-				{
-					k = 12;
-				}
-				else
-				{
-					k = kk;
-				}
-			}
-			if (game_map._vis[i][j] == false)
-			{
-				k = 9;
-			}
+			k = game_map.GetBloID(i, j);
 			BITMAP blo;
 			HBITMAP hblo = (HBITMAP)SelectObject(*hdcMem, g_hbmBlo[k]);
 
@@ -130,7 +107,7 @@ void InitNUMPADs()
 void InitBLOCKs()
 {
 	game_map.InitBox(20, 20);
-	for (int i = 1; i <= 12; i++)
+	for (int i = 1; i <= 13; i++)
 		g_hbmBlo[i] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(173 + i - 1));
 }
 
@@ -147,24 +124,51 @@ void GameOver(bool winorlose) {
 	}
 }
 
-VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired) {
-
+void GetNums() {
+	int num1 = game_map.Bombnum();
+	int num2 = game_map.time_now;
+	for (int i = 1; i <= 3; i++) {
+		allNums[4 - i] = num1 % 10;
+		allNums[7 - i] = num2 % 10;
+		num1 /= 10, num2 /= 10;
+	}
 }
 
-void GameStart()
+VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired) {
+	game_map.time_now++;
+	GetNums();
+	wchar_t str[100];
+	str[0] = allNums[6] + '0';
+	str[1] = '\0';
+	//MessageBox((HWND)lpParam, str, str, MB_OK);
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint((HWND)lpParam, &ps);
+	HDC hdcMem = CreateCompatibleDC(hdc);
+	RECT numClient;
+	NumPainting(&ps, &hdc, &hdcMem, ((game_map.size_col) * 25) - 39, allNums[1], allNums[2], allNums[3], allNums[4], allNums[5], allNums[6]);
+	GetClientRect((HWND)lpParam, &numClient);
+	SetRect(&numClient, numClient.left, numClient.top, numClient.right, 25);
+	InvalidateRect((HWND)lpParam, &numClient, TRUE);
+	//UpdateWindow((HWND)lpParam);
+	DeleteDC(hdc);
+	DeleteDC(hdcMem);
+	EndPaint((HWND)lpParam, &ps);
+	ReleaseDC((HWND)lpParam, hdc);
+}
+
+void GameStart(HWND hwnd)
 {
+	game_map.time_now = 0;
 	HANDLE hHandle = NULL;
 	HANDLE TimerID_1s = NULL;
-	CreateTimerQueueTimer(&TimerID_1s, hHandle, TimerRoutine, NULL, 0, 40, WT_EXECUTEDEFAULT);
-	UINT wTimeRes_1s = 1000;
-	UINT wAccuracy = 1;
+	CreateTimerQueueTimer(&TimerID_1s, hHandle, TimerRoutine, hwnd, 1, 1000, WT_EXECUTEDEFAULT);
 }
 
-void Lclick(int x, int y)
+void Lclick(int x, int y, HWND hwnd)
 {
 	if (game_map.tot_bomb == 0)
 	{
-		GameStart();
+		GameStart(hwnd);
 		game_map.RandomSetMines(x, y, 60);
 	}
 	if (game_map._vis[x][y] == false)

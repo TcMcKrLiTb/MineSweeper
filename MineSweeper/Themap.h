@@ -14,6 +14,7 @@ typedef struct _blocks
 	void InitBox(int x, int y);
 	void RandomSetMines(int x, int y, int tot);
 	void SearchAD(int x, int y);
+	int GetBloID(int x, int y);
 	int ComputNums(int x, int y);
 	int Flagnum();
 	int Bombnum();

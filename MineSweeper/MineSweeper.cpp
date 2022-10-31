@@ -126,29 +126,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			x -= 8, y -= 8;
 			x /= 25, y /= 25;
 			y++;
-			Lclick(x, y);
-			MapPainting(hWnd);
-			InvalidateRect(hWnd, NULL, TRUE);
+			Lclick(x, y, hWnd);
+			RECT bloClient;
+			GetClientRect(hWnd, &bloClient);
+			SetRect(&bloClient, bloClient.left, bloClient.top + 25, bloClient.right, bloClient.bottom);
+
 			UpdateWindow(hWnd);
+			InvalidateRect(hWnd, &bloClient, TRUE);
 		}
 		break;
 	case WM_RBUTTONDOWN:
-	{
-		int x, y;
-		if (wParam && MK_LBUTTON)
 		{
-			y = LOWORD(lParam);
-			x = HIWORD(lParam);
+			int x, y;
+			if (wParam && MK_LBUTTON)
+			{
+				y = LOWORD(lParam);
+				x = HIWORD(lParam);
+			}
+			x -= 8, y -= 8;
+			x /= 25, y /= 25;
+			y++;
+			Rclick(x, y);
+			MapPainting(hWnd);
+			InvalidateRect(hWnd, NULL, TRUE);
+			//UpdateWindow(hWnd);
 		}
-		x -= 8, y -= 8;
-		x /= 25, y /= 25;
-		y++;
-		Rclick(x, y);
-		MapPainting(hWnd);
-		InvalidateRect(hWnd, NULL, TRUE);
-		UpdateWindow(hWnd);
-	}
-	break;
+		break;
 	case WM_PAINT:
 		{
 			

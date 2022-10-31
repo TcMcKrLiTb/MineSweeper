@@ -53,6 +53,44 @@ void _blocks::SearchAD(int x, int y)
 	}
 }
 
+int _blocks::GetBloID(int x, int y)
+{
+	int k;
+	if (_vis[x][y] == true)
+	{
+		int kk = _Block[x][y];
+		if (kk == -1)
+		{
+			k = 11;
+		}
+		else if (kk == 0)
+		{
+			k = 10;
+		}
+		else if (kk == -3)
+		{
+			k = 12;
+		}
+		else
+		{
+			k = kk;
+		}
+	}
+	if (_vis[x][y] == false)
+	{
+		int kk = _Block[x][y];
+		if (kk == 0)
+		{
+			k = 9;
+		}
+		else if (kk == -2)
+		{
+			k = 13;
+		}
+	}
+	return k;
+}
+
 int _blocks::ComputNums(int x, int y)
 {
 	int ans = 0;
