@@ -9,6 +9,7 @@ typedef struct _blocks
 	int _Block[100][100];
 	bool _vis[100][100];
 	int size_col, size_row;
+	int time_now;
 	int tot_bomb;
 	void InitBox(int x, int y);
 	void RandomSetMines(int x, int y, int tot);

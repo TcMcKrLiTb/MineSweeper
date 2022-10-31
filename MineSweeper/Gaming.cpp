@@ -4,7 +4,7 @@
 
 void NumPainting(PAINTSTRUCT *ps, HDC *hdc, HDC *hdcMem, int pos,
 	int n1, int n2, int n3, int n4, int n5, int n6);
-void BloPainting(PAINTSTRUCT ps, HDC hdc, HDC hdcMem);
+void BloPainting(PAINTSTRUCT *ps, HDC *hdc, HDC *hdcMem);
 
 HBITMAP g_hbmNum[10] = { NULL };
 HBITMAP g_hbmBlo[14] = { NULL };
@@ -17,7 +17,7 @@ void MapPainting(HWND hwnd)
 	HDC hdcMem = CreateCompatibleDC(hdc);
 	NumPainting(&ps, &hdc, &hdcMem, ((game_map.size_col) * 25) - 39, allNums[1], allNums[2], allNums[3], allNums[4], allNums[5], allNums[6]);
 	//Sleep(1000);
-	BloPainting(ps, hdc, hdcMem);
+	BloPainting(&ps, &hdc, &hdcMem);
 
 	DeleteDC(hdc);
 	DeleteDC(hdcMem);
@@ -25,7 +25,7 @@ void MapPainting(HWND hwnd)
 	ReleaseDC(hwnd, hdc);
 }
 
-void BloPainting(PAINTSTRUCT ps, HDC hdc, HDC hdcMem)
+void BloPainting(PAINTSTRUCT *ps, HDC *hdc, HDC *hdcMem)
 {
 	for (int i = 1; i <= game_map.size_row; i++)
 	{
@@ -34,54 +34,33 @@ void BloPainting(PAINTSTRUCT ps, HDC hdc, HDC hdcMem)
 			int k = 0;
 			if (game_map._vis[i][j] == true)
 			{
-				switch (game_map._Block[i][j])
+				int kk = game_map._Block[i][j];
+				if (kk == -1)
 				{
-				case -1:
 					k = 11;
-					break;
-				case 0:
+				}
+				else if (kk == 0)
+				{
 					k = 10;
-					break;
-				case 1:
-					k = 1;
-					break;
-				case 2:
-					k = 2;
-					break;
-				case 3:
-					k = 3;
-					break;
-				case 4:
-					k = 4;
-					break;
-				case 5:
-					k = 5;
-					break;
-				case 6:
-					k = 6;
-					break;
-				case 7:
-					k = 7;
-					break;
-				case 8:
-					k = 8;
-					break;
+				}
+				else if (kk == -3)
+				{
+					k = 12;
+				}
+				else
+				{
+					k = kk;
 				}
 			}
-			else {
-				switch (game_map._Block[i][j])
-				{
-				case 0:
-					k = 9;
-					break;
-				}
+			if (game_map._vis[i][j] == false)
+			{
+				k = 9;
 			}
 			BITMAP blo;
-			HBITMAP hblo = (HBITMAP)SelectObject(hdcMem, g_hbmBlo[k]);
+			HBITMAP hblo = (HBITMAP)SelectObject(*hdcMem, g_hbmBlo[k]);
 
 			GetObject(g_hbmBlo[k], sizeof(blo), &blo);
-			BitBlt(hdc, 8 + (i - 1) * 25, 40+ (j - 1) * 25, blo.bmWidth, blo.bmHeight, hdcMem, 0, 0, SRCCOPY);
-
+			BitBlt(*hdc, 8 + (j - 1) * 25, 40+ (i - 1) * 25, blo.bmWidth, blo.bmHeight, *hdcMem, 0, 0, SRCCOPY);
 		}
 	}
 }
@@ -150,30 +129,50 @@ void InitNUMPADs()
 
 void InitBLOCKs()
 {
-	game_map.InitBox(10, 10);
+	game_map.InitBox(20, 20);
 	for (int i = 1; i <= 12; i++)
 		g_hbmBlo[i] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(173 + i - 1));
 }
 
 void GameOver(bool winorlose) {
-	;
+	for (int i = 1; i <= game_map.size_row; i++)
+	{
+		for (int j = 1; j <= game_map.size_col; j++)
+		{
+			if (game_map._Block[i][j] == -1)
+			{
+				game_map._vis[i][j] = true;
+			}
+		}
+	}
+}
+
+VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired) {
+
+}
+
+void GameStart()
+{
+	HANDLE hHandle = NULL;
+	HANDLE TimerID_1s = NULL;
+	CreateTimerQueueTimer(&TimerID_1s, hHandle, TimerRoutine, NULL, 0, 40, WT_EXECUTEDEFAULT);
+	UINT wTimeRes_1s = 1000;
+	UINT wAccuracy = 1;
 }
 
 void Lclick(int x, int y)
 {
-	int t = x;
-	x = y;
-	y = t;
 	if (game_map.tot_bomb == 0)
 	{
-		game_map.RandomSetMines(x, y, 10);
-		game_map.tot_bomb = 10;
+		GameStart();
+		game_map.RandomSetMines(x, y, 60);
 	}
 	if (game_map._vis[x][y] == false)
 	{
-		game_map._vis[x][y] = true;
 		if (game_map._Block[x][y] == -1)
 		{
+			game_map._vis[x][y] = true;
+			game_map._Block[x][y] = -3;
 			GameOver(false);
 		}
 		else 
@@ -183,6 +182,7 @@ void Lclick(int x, int y)
 			{
 				game_map.SearchAD(x, y);
 			}
+			game_map._vis[x][y] = true;
 		}
 	}
 	//for (int i = 1; i <= game_map.size_row; i++)
@@ -192,9 +192,6 @@ void Lclick(int x, int y)
 
 void Rclick(int x, int y)
 {
-	int t = x;
-	x = y;
-	y = t;
 	if (game_map._vis[x][y] == false)
 	{
 		game_map._Block[x][y] = -2;

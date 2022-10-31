@@ -1,5 +1,6 @@
 #include "Themap.h"
-
+int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
+	{1, 0}, {0, 1}, {0, -1}, {-1, 0}, {-1, -1} };
 
 void _blocks::InitBox(int x, int y)
 {
@@ -18,30 +19,43 @@ void _blocks::InitBox(int x, int y)
 
 void _blocks::RandomSetMines(int x, int y, int tot)
 {
-	int a, b;
 	srand((unsigned)time(NULL));
 	for (int i = 1; i <= tot; )
 	{
-		a = rand() % size_row + 1;
-		b = rand() % size_col + 1;
+		int a = rand() % size_row + 1;
+		int b = rand() % size_col + 1;
 		if (_Block[a][b] == 0 && a != x && b != y) 
 		{
 			_Block[a][b] = -1;
 			i++;
 		}
 	}
+	tot_bomb = tot;
 }
 
 void _blocks::SearchAD(int x, int y)
 {
-	;
+	if (x > size_row || x < 1 || y > size_col || y < 1)
+		return;
+	if (ComputNums(x, y) != 0 || _vis[x][y] == true)
+	{
+		if (_Block[x][y] != -1 && _Block[x][y] != -2 && _Block[x][y] != -3) 
+		{
+			_vis[x][y] = true;
+			_Block[x][y] = ComputNums(x, y);
+		}
+		return;
+	}
+	_vis[x][y] = true;
+	for (int i = 0; i < 8; i++)
+	{
+		SearchAD(x + step[i][0], y + step[i][1]);
+	}
 }
 
 int _blocks::ComputNums(int x, int y)
 {
 	int ans = 0;
-	int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
-	{1, 0}, {0, 1}, {0, -1}, {-1, 0}, {-1, -1} };
 	for (int i = 0; i < 8; i++) 
 	{
 		ans += (_Block[x + step[i][0]][y + step[i][1]] == -1);

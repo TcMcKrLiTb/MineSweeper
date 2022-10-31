@@ -117,7 +117,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_LBUTTONDOWN:
 		{
-			int x, y;
+			int x = 0, y = 0;
 			if (wParam && MK_LBUTTON)
 			{
 				y = LOWORD(lParam);
