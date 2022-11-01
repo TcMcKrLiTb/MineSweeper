@@ -13,6 +13,7 @@ void _blocks::InitBox(int x, int y)
 		{
 			_Block[i][j] = 0;
 			_vis[i][j] = false;
+			_flag[i][j] = false;
 		}
 	}
 }
@@ -55,37 +56,38 @@ void _blocks::SearchAD(int x, int y)
 
 int _blocks::GetBloID(int x, int y)
 {
-	int k;
+	int k = 0;
 	if (_vis[x][y] == true)
 	{
-		int kk = _Block[x][y];
-		if (kk == -1)
+		switch (_Block[x][y])
 		{
+		case -1:
 			k = 11;
-		}
-		else if (kk == 0)
-		{
+			break;
+		case 0:
 			k = 10;
-		}
-		else if (kk == -3)
-		{
+			break;
+		case -3:
 			k = 12;
-		}
-		else
-		{
-			k = kk;
+			break;
+		default:
+			k = _Block[x][y];
+			break;
 		}
 	}
-	if (_vis[x][y] == false)
+	else if (_vis[x][y] == false)
 	{
-		int kk = _Block[x][y];
-		if (kk == 0)
-		{
-			k = 9;
-		}
-		else if (kk == -2)
-		{
+		if (_flag[x][y])
 			k = 13;
+		else 
+		{
+			switch (_Block[x][y])
+			{
+			case -1:
+			case 0:
+				k = 9;
+				break;
+			}
 		}
 	}
 	return k;
@@ -108,7 +110,7 @@ int _blocks::Flagnum()
 	{
 		for (int j = 1; j <= size_col; j++)
 		{
-			if (_Block[i][j] == -2)
+			if (_flag[i][j] == true)
 				ans++;
 		}
 	}

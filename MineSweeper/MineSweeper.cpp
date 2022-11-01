@@ -131,8 +131,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			GetClientRect(hWnd, &bloClient);
 			SetRect(&bloClient, bloClient.left, bloClient.top + 25, bloClient.right, bloClient.bottom);
 
+			InvalidateRect(hWnd, NULL, TRUE);
 			UpdateWindow(hWnd);
-			InvalidateRect(hWnd, &bloClient, TRUE);
 		}
 		break;
 	case WM_RBUTTONDOWN:
