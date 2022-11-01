@@ -119,14 +119,24 @@ void InitBLOCKs()
 }
 
 void GameOver(bool winorlose) {
-	BOOL Result = DeleteTimerQueueTimer(hHandle, TimerID_1s, NULL);
-	for (int i = 1; i <= game_map.size_row; i++)
+	if (winorlose)
 	{
-		for (int j = 1; j <= game_map.size_col; j++)
+		;
+	}
+	else
+	{
+		BOOL Result = DeleteTimerQueueTimer(hHandle, TimerID_1s, NULL);
+		if (Result) {
+			;
+		}
+		for (int i = 1; i <= game_map.size_row; i++)
 		{
-			if (game_map._Block[i][j] == -1)
+			for (int j = 1; j <= game_map.size_col; j++)
 			{
-				game_map._vis[i][j] = true;
+				if (game_map._Block[i][j] == -1)
+				{
+					game_map._vis[i][j] = true;
+				}
 			}
 		}
 	}
@@ -196,14 +206,17 @@ void Lclick(int x, int y, HWND hwnd)
 	}
 }
 
-void Rclick(int x, int y)
+void Rclick(int x, int y, HWND hwnd)
 {
 	if (game_map._vis[x][y] == false)
 	{
 		if (game_map._flag[x][y])
 			game_map._flag[x][y] = false;
 		else
-			game_map._flag[x][y] = true;
+		{
+			if (game_map.Flagnum() < game_map.tot_bomb)
+				game_map._flag[x][y] = true;
+		}
 	}
 
 }
