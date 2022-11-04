@@ -143,6 +143,7 @@
     <ResourceCompile Include="MineSweeper.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="icos\blocks\bitmap1.bmp" />
     <Image Include="icos\blocks\bomb.bmp" />
     <Image Include="icos\blocks\eight_block.bmp" />
     <Image Include="icos\blocks\exploded_bomb.bmp" />
@@ -156,7 +157,9 @@
     <Image Include="icos\blocks\three_block.bmp" />
     <Image Include="icos\blocks\two_block.bmp" />
     <Image Include="icos\blocks\unreaded_block.bmp" />
+    <Image Include="icos\losser.bmp" />
     <Image Include="icos\MineSweeper.ico" />
+    <Image Include="icos\normal.bmp" />
     <Image Include="icos\nums\eight.bmp" />
     <Image Include="icos\nums\five.bmp" />
     <Image Include="icos\nums\four.bmp" />
@@ -168,6 +171,7 @@
     <Image Include="icos\nums\two.bmp" />
     <Image Include="icos\nums\zero.bmp" />
     <Image Include="icos\small.ico" />
+    <Image Include="icos\winner.bmp" />
     <Image Include="Minesweepertiles.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

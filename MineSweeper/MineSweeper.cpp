@@ -122,18 +122,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				y = GET_X_LPARAM(lParam);
 				x = GET_Y_LPARAM(lParam);
-				//y = LOWORD(lParam);
-				//x = HIWORD(lParam);
 			}
-			x -= 8, y -= 8;
-			x /= 25, y /= 25;
-			y++;
 			Lclick(x, y, hWnd);
-			RECT bloClient;
-			GetClientRect(hWnd, &bloClient);
-			SetRect(&bloClient, bloClient.left, bloClient.top + 25, bloClient.right, bloClient.bottom);
+			//RECT bloClient;
+			//GetClientRect(hWnd, &bloClient);
+			//SetRect(&bloClient, bloClient.left, bloClient.top + 25, bloClient.right, bloClient.bottom);
 
-			InvalidateRect(hWnd, &bloClient, TRUE);
+			InvalidateRect(hWnd, NULL, TRUE);
 			//UpdateWindow(hWnd);
 		}
 		break;
@@ -145,13 +140,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				y = LOWORD(lParam);
 				x = HIWORD(lParam);
 			}
-			x -= 8, y -= 8;
-			x /= 25, y /= 25;
-			y++;
-			Rclick(x, y);
+			Rclick(x, y, hWnd);
 			MapPainting(hWnd);
 			InvalidateRect(hWnd, NULL, TRUE);
-			UpdateWindow(hWnd);
+			//UpdateWindow(hWnd);
 		}
 		break;
 	case WM_PAINT:

@@ -2,8 +2,33 @@
 int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
 	{1, 0}, {0, 1}, {0, -1}, {-1, 0}, {-1, -1} };
 
+bool _blocks::JudgeisWin()
+{
+	int cnt1 = 0, cnt2 = 0;
+	for (int i = 1; i <= size_row; i++)
+	{
+		for (int j = 1; j <= size_col; j++)
+		{
+			if (_vis[i][j] == true)
+			{
+				cnt1++;
+			}
+			else if (_flag[i][j] == true)
+			{
+				cnt2++;
+			}
+		}
+	}
+	if ((cnt1 + cnt2) == (size_col * size_row))
+	{
+		return true;
+	}
+	return false;
+}
+
 void _blocks::InitBox(int x, int y)
 {
+	tot_bomb = 0;
 	size_row = x;
 	size_col = y;
 	tot_bomb = 0;

@@ -135,5 +135,17 @@
     <Image Include="icos\blocks\flag.bmp">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="icos\blocks\bitmap1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="icos\losser.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="icos\normal.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="icos\winner.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

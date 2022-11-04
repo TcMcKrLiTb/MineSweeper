@@ -5,9 +5,11 @@
 void NumPainting(PAINTSTRUCT *ps, HDC *hdc, HDC *hdcMem, int pos,
 	int n1, int n2, int n3, int n4, int n5, int n6);
 void BloPainting(PAINTSTRUCT *ps, HDC *hdc, HDC *hdcMem);
+void ButPainting(PAINTSTRUCT* ps, HDC* hdc, HDC* hdcMem, int state);
 
 HBITMAP g_hbmNum[10] = { NULL };
 HBITMAP g_hbmBlo[14] = { NULL };
+HBITMAP g_hbmBut[4] = { NULL };
 HANDLE hHandle = NULL;
 HANDLE TimerID_1s = NULL;
 int allNums[7];
@@ -17,6 +19,7 @@ void MapPainting(HWND hwnd)
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hwnd, &ps);
 	HDC hdcMem = CreateCompatibleDC(hdc);
+	ButPainting(&ps, &hdc, &hdcMem, game_map.game_state);
 	NumPainting(&ps, &hdc, &hdcMem, ((game_map.size_col) * 25) - 39, allNums[1], allNums[2], allNums[3], allNums[4], allNums[5], allNums[6]);
 	//Sleep(1000);
 	BloPainting(&ps, &hdc, &hdcMem);
@@ -46,6 +49,37 @@ void BloPainting(PAINTSTRUCT *ps, HDC *hdc, HDC *hdcMem)
 			GetObject(g_hbmBlo[k], sizeof(blo), &blo);
 			BitBlt(*hdc, 8 + (j - 1) * 25, 40+ (i - 1) * 25, blo.bmWidth, blo.bmHeight, *hdcMem, 0, 0, SRCCOPY);
 		}
+	}
+}
+
+void ButPainting(PAINTSTRUCT* ps, HDC* hdc, HDC* hdcMem, int state)
+{
+	BITMAP but;
+	HBITMAP hbut = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BLOCKS1));
+	SelectObject(*hdcMem, hbut);
+	GetObject(hbut, sizeof(but), &but);
+	BitBlt(*hdc, (10 + (25 * (game_map.size_col + 1))) / 2 - 23, 0, but.bmWidth, but.bmHeight, *hdcMem, 0, 0, SRCCOPY);
+	switch (state)
+	{
+	case 0:
+	case 1:
+		hbut = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(193));
+		SelectObject(*hdcMem, hbut);
+		GetObject(hbut, sizeof(but), &but);
+		BitBlt(*hdc, (10 + (25 * (game_map.size_col + 1))) / 2 - 21, 2, but.bmWidth, but.bmHeight, *hdcMem, 0, 0, SRCCOPY);
+		break;
+	case 2:
+		hbut = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(194));
+		SelectObject(*hdcMem, hbut);
+		GetObject(hbut, sizeof(but), &but);
+		BitBlt(*hdc, (10 + (25 * (game_map.size_col + 1))) / 2 - 21, 2, but.bmWidth, but.bmHeight, *hdcMem, 0, 0, SRCCOPY);
+		break;
+	case 3:
+		hbut = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(195));
+		SelectObject(*hdcMem, hbut);
+		GetObject(hbut, sizeof(but), &but);
+		BitBlt(*hdc, (10 + (25 * (game_map.size_col + 1))) / 2 - 21, 2, but.bmWidth, but.bmHeight, *hdcMem, 0, 0, SRCCOPY);
+		break;
 	}
 }
 
@@ -113,6 +147,7 @@ void InitNUMPADs()
 
 void InitBLOCKs()
 {
+	game_map.game_state = 0;
 	game_map.InitBox(10, 10);
 	for (int i = 1; i <= 13; i++)
 		g_hbmBlo[i] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE((int)(173 + i) - 1));
@@ -121,10 +156,16 @@ void InitBLOCKs()
 void GameOver(bool winorlose) {
 	if (winorlose)
 	{
-		;
+		game_map.game_state = 2;
+		BOOL Result = DeleteTimerQueueTimer(hHandle, TimerID_1s, NULL);
+		if (Result) {
+			;
+		}
+
 	}
 	else
 	{
+		game_map.game_state = 3;
 		BOOL Result = DeleteTimerQueueTimer(hHandle, TimerID_1s, NULL);
 		if (Result) {
 			;
@@ -171,52 +212,99 @@ VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired) {
 
 void GameStart(HWND hwnd)
 {
+	game_map.game_state = 1;
 	game_map.time_now = 0;
 	CreateTimerQueueTimer(&TimerID_1s, hHandle, TimerRoutine, hwnd, 1, 1000, WT_EXECUTEDEFAULT);
 }
 
 void Lclick(int x, int y, HWND hwnd)
 {
-	if (game_map.tot_bomb == 0)
+	if (x > 40)
 	{
-		GameStart(hwnd);
-		game_map.RandomSetMines(x, y, 10);
-	}
-	if (game_map._vis[x][y] == false)
-	{
-		if (game_map._Block[x][y] == -1)
+		if (game_map.game_state != 1 && game_map.game_state != 0)
 		{
-			game_map._vis[x][y] = true;
-			game_map._Block[x][y] = -3;
-			GameOver(false);
+			return;
 		}
-		else if (game_map._Block[x][y] == -2)
+		x -= 8;
+		y -= 8;
+		x /= 25;
+		y /= 25;
+		y++;
+		if (game_map.game_state == 0)
 		{
-			;
+			GameStart(hwnd);
+			game_map.RandomSetMines(x, y, 10);
 		}
-		else 
+		if (game_map._vis[x][y] == false)
 		{
-			game_map._Block[x][y] = game_map.ComputNums(x, y);
-			if (game_map._Block[x][y] == 0)
+			if (game_map._flag[x][y] == true)
 			{
-				game_map.SearchAD(x, y);
+				return;
 			}
-			game_map._vis[x][y] = true;
+			else if (game_map._Block[x][y] == -1)
+			{
+				game_map._vis[x][y] = true;
+				game_map._Block[x][y] = -3;
+				GameOver(false);
+			}
+			else
+			{
+				game_map._Block[x][y] = game_map.ComputNums(x, y);
+				if (game_map._Block[x][y] == 0)
+				{
+					game_map.SearchAD(x, y);
+				}
+				game_map._vis[x][y] = true;
+			}
+		}
+		if (game_map.JudgeisWin() == true) {
+			GameOver(true);
+		}
+	}
+	else
+	{
+		if (y > (10 + (25 * (game_map.size_col + 1))) / 2 - 23 && y < (10 + (25 * (game_map.size_col + 1))) / 2 + 22)
+		{
+			if (TimerID_1s != NULL)
+			{
+				if (game_map.game_state == 1)
+				{
+					BOOL Result = DeleteTimerQueueTimer(hHandle, TimerID_1s, NULL);
+					if (Result) {
+						;
+					}
+				}
+			}
+			game_map.time_now = 0;
+			GetNums();
+			game_map.game_state = 0;
+			game_map.InitBox(10, 10);
+
 		}
 	}
 }
 
 void Rclick(int x, int y, HWND hwnd)
 {
-	if (game_map._vis[x][y] == false)
+	if (x > 40)
 	{
-		if (game_map._flag[x][y])
-			game_map._flag[x][y] = false;
-		else
+		x -= 8;
+		y -= 8;
+		x /= 25;
+		y /= 25;
+		y++;
+		if (game_map._vis[x][y] == false)
 		{
-			if (game_map.Flagnum() < game_map.tot_bomb)
-				game_map._flag[x][y] = true;
+			if (game_map._flag[x][y])
+				game_map._flag[x][y] = false;
+			else
+			{
+				if (game_map.Flagnum() < game_map.tot_bomb)
+					game_map._flag[x][y] = true;
+			}
+		}
+		if (game_map.JudgeisWin() == true) {
+			GameOver(true);
 		}
 	}
-
 }
