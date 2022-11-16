@@ -17,6 +17,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    Setting(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 					 _In_opt_ HINSTANCE hPrevInstance,
@@ -65,7 +66,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hInstance      = hInstance;
 	wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MINESWEEPER));
 	wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+6);
 	wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_MINESWEEPER);
 	wcex.lpszClassName  = szWindowClass;
 	wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -76,9 +77,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance;
+   HMENU hmenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDC_MINESWEEPER));
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME,
-	  240, 100, 240, 500, nullptr, nullptr, hInstance, nullptr);
+	  240, 100, 240, 500, nullptr, hmenu, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -93,6 +95,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	HMENU hmenu = GetMenu(hWnd);
 	switch (message)
 	{
 	case WM_CREATE:
@@ -109,6 +112,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case IDM_EXIT:
 				DestroyWindow(hWnd);
+				break;
+			case IDM_NEWGAME:
+				GameRestart();
+				InvalidateRect(hWnd, NULL, TRUE);
+				break;
+			case IDM_BEGINNER:
+				SetGame(10, 10, 10);
+				GameRestart();
+				//if (CheckMenuItem(hmenu, IDM_BEGINNER, MF_CHECKED | MF_BYPOSITION))
+					//MessageBox(hWnd, _T("123"), _T("123"), MB_OK);
+				//SetMenuItemInfoA(GetMenu(hWnd), IDM_BEGINNER, TRUE, MF_CHECKED);
+				InvalidateRect(hWnd, NULL, TRUE);
+				DrawMenuBar(hWnd);
+				break;
+			case IDM_MEDIATE:
+				SetGame(16, 16, 40);
+				GameRestart();
+				InvalidateRect(hWnd, NULL, TRUE);
+				EnableMenuItem(hmenu, IDM_MEDIATE, MF_DISABLED | MF_BYPOSITION);
+				DrawMenuBar(hWnd);
+				break;
+			case IDM_EXPERT:
+				SetGame(16, 30, 99);
+				GameRestart();
+				InvalidateRect(hWnd, NULL, TRUE);
+				DrawMenuBar(hWnd);
+				break;
+			case IDM_CUSTOM:
+				DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG1), hWnd, Setting);
+				GameRestart();
+				InvalidateRect(hWnd, NULL, TRUE);
+				EnableMenuItem(hmenu, IDM_MEDIATE, MF_DISABLED | MF_BYPOSITION);
+				DrawMenuBar(hWnd);
 				break;
 			default:
 				return DefWindowProc(hWnd, message, wParam, lParam);
@@ -134,7 +170,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_RBUTTONDOWN:
 		{
-			int x, y;
+			int x = 0, y = 0;
 			if (wParam && MK_LBUTTON)
 			{
 				y = LOWORD(lParam);
@@ -148,10 +184,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		{
-			
 			ReSizeGameWnd(hWnd);
 			MapPainting(hWnd);
-			
 		}
 		break;
 	case WM_DESTROY:
@@ -178,7 +212,76 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			return (INT_PTR)TRUE;
 		}
 		if (LOWORD(wParam) == IDC_BUTTON1) {
-			system("start www.github.com");
+			system("start https://github.com/TcMcKrLiTb/MineSweeper");
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK Setting(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) 
+{
+
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		wchar_t* stri;
+		stri = (wchar_t*)malloc(sizeof(wchar_t) * 10);
+		InttoStr(GetGame(1), stri);
+
+		if (stri != NULL)
+			memset(stri, 0, sizeof(stri));
+		InttoStr(GetGame(1), stri);
+		if (stri != NULL)
+			SetDlgItemTextW(hDlg, IDC_EDIT1, stri);
+
+		if (stri != NULL)
+			memset(stri, 0, sizeof(stri));
+		InttoStr(GetGame(2), stri);
+		if (stri != NULL)
+			SetDlgItemTextW(hDlg, IDC_EDIT2, stri);
+
+		if (stri != NULL)
+			memset(stri, 0, sizeof(stri));
+		InttoStr(GetGame(3), stri);
+		if (stri != NULL)
+			SetDlgItemTextW(hDlg, IDC_EDIT3, stri);
+
+		free(stri);
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == IDOK) {
+
+			wchar_t* stri;
+			int x = 0;
+			stri = (wchar_t*)malloc(sizeof(wchar_t) * 10);
+			if (stri != NULL)
+				GetDlgItemTextW(hDlg, IDC_EDIT1, stri, 10);
+			StrtoInt(&x, stri);
+			JudgeNum(&x, 1);
+			SetGame(x, GetGame(2), GetGame(3));
+
+			if (stri != NULL)
+				GetDlgItemTextW(hDlg, IDC_EDIT2, stri, 10);
+			StrtoInt(&x, stri);
+			JudgeNum(&x, 2);
+			SetGame(GetGame(1), x, GetGame(3));
+
+			if (stri != NULL)
+				GetDlgItemTextW(hDlg, IDC_EDIT3, stri, 10);
+			StrtoInt(&x, stri);
+			JudgeNum(&x, 3);
+			SetGame(GetGame(1), GetGame(2), x);
+
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
 		}
 		break;
 	}

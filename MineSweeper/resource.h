@@ -38,8 +38,18 @@
 #define IDB_NORMAL                      193
 #define IDB_WINNER                      194
 #define IDB_LOSSER                      195
+#define IDD_DIALOG1                     196
 #define IDC_BUTTON1                     1000
 #define IDC_TAB1                        1001
+#define IDC_EDIT1                       1006
+#define IDC_EDIT2                       1007
+#define IDC_EDIT3                       1008
+#define IDM_NEWGAME                     32778
+#define IDM_BEGINNER                    32780
+#define IDM_MEDIATE                     32782
+#define IDM_EXPERT                      32783
+#define ID_32784                        32784
+#define IDM_CUSTOM                      32785
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -47,9 +57,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        196
-#define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1002
+#define _APS_NEXT_RESOURCE_VALUE        197
+#define _APS_NEXT_COMMAND_VALUE         32786
+#define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           122
 #endif
 #endif

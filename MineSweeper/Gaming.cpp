@@ -12,13 +12,15 @@ HBITMAP g_hbmBlo[14] = { NULL };
 HBITMAP g_hbmBut[4] = { NULL };
 HANDLE hHandle = NULL;
 HANDLE TimerID_1s = NULL;
-int allNums[7];
 _Blocks game_map;
+int allNums[7];
+int __ROW__ = 10, __COL__ = 10, __MINE__ = 10;
 void MapPainting(HWND hwnd)
 {
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hwnd, &ps);
 	HDC hdcMem = CreateCompatibleDC(hdc);
+	GetNums();
 	ButPainting(&ps, &hdc, &hdcMem, game_map.game_state);
 	NumPainting(&ps, &hdc, &hdcMem, ((game_map.size_col) * 25) - 39, allNums[1], allNums[2], allNums[3], allNums[4], allNums[5], allNums[6]);
 	//Sleep(1000);
@@ -138,6 +140,34 @@ void ReSizeGameWnd(HWND hwnd)
 		TRUE);
 }
 
+void InttoStr(int x, wchar_t* str)
+{
+	int i = 0;
+	while (x)
+	{
+		str[i] = (x % 10) + '0';
+		x /= 10;
+		i++;
+	}
+	for (int j = 0; j < i / 2; j++)
+	{
+		wchar_t t = str[j];
+		str[j] = str[i - j - 1];
+		str[i - j - 1] = t;
+	}
+}
+
+void StrtoInt(int* x, wchar_t* str)
+{
+	int len = 0;
+	*x = 0;
+	while (str[len++] != 0);
+	for (int i = 0; i < len - 1; i++) {
+		*x *= 10;
+		*x += str[i] - '0';
+	}
+}
+
 void InitNUMPADs()
 {
 	g_hbmNum[0] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(164));
@@ -148,7 +178,7 @@ void InitNUMPADs()
 void InitBLOCKs()
 {
 	game_map.game_state = 0;
-	game_map.InitBox(10, 10);
+	game_map.InitBox(__ROW__, __COL__);
 	for (int i = 1; i <= 13; i++)
 		g_hbmBlo[i] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE((int)(173 + i) - 1));
 }
@@ -161,7 +191,6 @@ void GameOver(bool winorlose) {
 		if (Result) {
 			;
 		}
-
 	}
 	else
 	{
@@ -183,6 +212,44 @@ void GameOver(bool winorlose) {
 	}
 }
 
+void GameRestart()
+{
+	if (TimerID_1s != NULL)
+	{
+		if (game_map.game_state == 1)
+		{
+			BOOL Result = DeleteTimerQueueTimer(hHandle, TimerID_1s, NULL);
+			if (Result) {
+				;
+			}
+		}
+	}
+	game_map.time_now = 0;
+	GetNums();
+	game_map.game_state = 0;
+	game_map.InitBox(__ROW__, __COL__);
+	return;
+}
+
+void JudgeNum(int* x, int choose)
+{
+	switch (choose)
+	{
+	case 1:
+		*x = *x < 1 ? 1 : *x;
+		*x = *x > 34 ? 34 : *x;
+		break;
+	case 2:
+		*x = *x < 4 ? 4 : *x;
+		*x = *x > 60 ? 60 : *x;
+		break;
+	case 3:
+		*x = *x < 1 ? 1 : *x;
+		*x = *x > ((__ROW__ * __COL__) - 1) ? ((__ROW__ * __COL__) - 1) : *x;
+		break;
+	}
+}
+
 void GetNums() {
 	int num1 = game_map.Bombnum();
 	int num2 = game_map.time_now;
@@ -190,6 +257,30 @@ void GetNums() {
 		allNums[4 - i] = num1 % 10;
 		allNums[7 - i] = num2 % 10;
 		num1 /= 10, num2 /= 10;
+	}
+}
+
+void SetGame(int row, int col, int mine)
+{
+	__ROW__ = row;
+	__COL__ = col;
+	__MINE__ = mine;
+	return;
+}
+
+int GetGame(int choose)
+{
+	switch (choose)
+	{
+	case 1:
+		return __ROW__;
+		break;
+	case 2:
+		return __COL__;
+		break;
+	case 3:
+		return __MINE__;
+		break;
 	}
 }
 
@@ -233,7 +324,7 @@ void Lclick(int x, int y, HWND hwnd)
 		if (game_map.game_state == 0)
 		{
 			GameStart(hwnd);
-			game_map.RandomSetMines(x, y, 10);
+			game_map.RandomSetMines(x, y, __MINE__);
 		}
 		if (game_map._vis[x][y] == false)
 		{
@@ -257,7 +348,16 @@ void Lclick(int x, int y, HWND hwnd)
 				game_map._vis[x][y] = true;
 			}
 		}
-		if (game_map.JudgeisWin() == true) {
+		if (game_map.JudgeisWin() == true) 
+		{
+			for (int i = 1; i <= game_map.size_row; i++)
+			{
+				for (int j = 1; j <= game_map.size_col; j++)
+				{
+					if (game_map._Block[i][j] == -1)
+						game_map._flag[i][j] = true;
+				}
+			}
 			GameOver(true);
 		}
 	}
@@ -265,21 +365,7 @@ void Lclick(int x, int y, HWND hwnd)
 	{
 		if (y > (10 + (25 * (game_map.size_col + 1))) / 2 - 23 && y < (10 + (25 * (game_map.size_col + 1))) / 2 + 22)
 		{
-			if (TimerID_1s != NULL)
-			{
-				if (game_map.game_state == 1)
-				{
-					BOOL Result = DeleteTimerQueueTimer(hHandle, TimerID_1s, NULL);
-					if (Result) {
-						;
-					}
-				}
-			}
-			game_map.time_now = 0;
-			GetNums();
-			game_map.game_state = 0;
-			game_map.InitBox(10, 10);
-
+			GameRestart();
 		}
 	}
 }

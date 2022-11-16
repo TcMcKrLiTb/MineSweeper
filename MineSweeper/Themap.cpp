@@ -19,7 +19,7 @@ bool _blocks::JudgeisWin()
 			}
 		}
 	}
-	if ((cnt1 + cnt2) == (size_col * size_row))
+	if ((cnt1 + cnt2) == (size_col * size_row) || (size_row * size_col - cnt1) == tot_bomb)
 	{
 		return true;
 	}
@@ -46,14 +46,39 @@ void _blocks::InitBox(int x, int y)
 void _blocks::RandomSetMines(int x, int y, int tot)
 {
 	srand((unsigned)time(NULL));
-	for (int i = 1; i <= tot; )
+	int _size = size_row * size_col;
+	if (tot <= (_size * 6) / 10)
 	{
-		int a = rand() % size_row + 1;
-		int b = rand() % size_col + 1;
-		if (_Block[a][b] == 0 && a != x && b != y) 
+		for (int i = 1; i <= tot; )
 		{
-			_Block[a][b] = -1;
-			i++;
+			int a = rand() % size_row + 1;
+			int b = rand() % size_col + 1;
+			if (_Block[a][b] == 0 && a != x && b != y)
+			{
+				_Block[a][b] = -1;
+				i++;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 1; i <= size_row; i++)
+		{
+			for (int j = 1; j <= size_col; j++)
+			{
+				if (i != x || j != y)
+					_Block[i][j] = -1;
+			}
+		}
+		for (int i = 1; i <= _size - tot - 1; )
+		{
+			int a = rand() % size_row + 1;
+			int b = rand() % size_col + 1;
+			if (_Block[a][b] == -1)
+			{
+				_Block[a][b] = 0;
+				i++;
+			}
 		}
 	}
 	tot_bomb = tot;
@@ -124,6 +149,16 @@ int _blocks::ComputNums(int x, int y)
 	for (int i = 0; i < 8; i++) 
 	{
 		ans += (_Block[x + step[i][0]][y + step[i][1]] == -1);
+	}
+	return ans;
+}
+
+int _blocks::ComputFlag(int x, int y)
+{
+	int ans = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		ans += (_flag[x + step[i][0]][y + step[i][1]] == true);
 	}
 	return ans;
 }

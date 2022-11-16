@@ -18,6 +18,7 @@ typedef struct _blocks
 	void SearchAD(int x, int y);
 	int GetBloID(int x, int y);
 	int ComputNums(int x, int y);
+	int ComputFlag(int x, int y);
 	int Flagnum();
 	int Bombnum();
 	bool JudgeisWin();
