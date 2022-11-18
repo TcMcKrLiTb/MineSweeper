@@ -4,7 +4,7 @@ int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
 
 bool _blocks::JudgeisWin()
 {
-	int cnt1 = 0, cnt2 = 0;
+	int cnt1 = 0, cnt2 = 0, flag = 1;
 	for (int i = 1; i <= size_row; i++)
 	{
 		for (int j = 1; j <= size_col; j++)
@@ -17,9 +17,15 @@ bool _blocks::JudgeisWin()
 			{
 				cnt2++;
 			}
+			if (_Block[i][j] == -1 && _flag[i][j] == false)
+			{
+				flag = false;
+			}
 		}
 	}
-	if ((cnt1 + cnt2) == (size_col * size_row) || (size_row * size_col - cnt1) == tot_bomb)
+	if ((cnt1 + cnt2) == (size_col * size_row) || 
+		(size_row * size_col - cnt1) == tot_bomb ||
+		flag == true)
 	{
 		return true;
 	}

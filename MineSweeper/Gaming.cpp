@@ -15,6 +15,8 @@ HANDLE TimerID_1s = NULL;
 _Blocks game_map;
 int allNums[7];
 int __ROW__ = 10, __COL__ = 10, __MINE__ = 10;
+//int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
+//	{1, 0}, {0, 1}, {0, -1}, {-1, 0}, {-1, -1} };
 void MapPainting(HWND hwnd)
 {
 	PAINTSTRUCT ps;
@@ -191,6 +193,16 @@ void GameOver(bool winorlose) {
 		if (Result) {
 			;
 		}
+		for (int i = 1; i <= game_map.size_row; i++)
+		{
+			for (int j = 1; j <= game_map.size_col; j++)
+			{
+				if (game_map._Block[i][j] != -1 && game_map._vis[i][j] != true)
+				{
+					game_map._vis[i][j] = true;
+				}
+			}
+		}
 	}
 	else
 	{
@@ -250,7 +262,8 @@ void JudgeNum(int* x, int choose)
 	}
 }
 
-void GetNums() {
+void GetNums()
+{
 	int num1 = game_map.Bombnum();
 	int num2 = game_map.time_now;
 	for (int i = 1; i <= 3; i++) {
@@ -282,6 +295,7 @@ int GetGame(int choose)
 		return __MINE__;
 		break;
 	}
+	return 0;
 }
 
 VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired) {
@@ -372,6 +386,8 @@ void Lclick(int x, int y, HWND hwnd)
 
 void Rclick(int x, int y, HWND hwnd)
 {
+	int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
+		{1, 0}, {0, 1}, {0, -1}, {-1, 0}, {-1, -1} };
 	if (x > 40)
 	{
 		x -= 8;
@@ -387,6 +403,22 @@ void Rclick(int x, int y, HWND hwnd)
 			{
 				if (game_map.Flagnum() < game_map.tot_bomb)
 					game_map._flag[x][y] = true;
+			}
+		}
+		else if (game_map._vis[x][y] == true)
+		{
+			if (game_map.ComputNums(x, y) == game_map.ComputFlag(x, y)) 
+			{
+				for (int i = 0; i < 8; i++)
+				{
+					Lclick((x + step[i][0]) * 25 + 20, (y + step[i][1] - 1) * 25 + 8, hwnd);
+					if (game_map.game_state != 1)
+						return;
+				}
+			}
+			else
+			{
+				;
 			}
 		}
 		if (game_map.JudgeisWin() == true) {
