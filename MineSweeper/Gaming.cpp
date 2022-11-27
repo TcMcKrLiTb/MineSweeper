@@ -199,6 +199,7 @@ void GameOver(bool winorlose) {
 			{
 				if (game_map._Block[i][j] != -1 && game_map._vis[i][j] != true)
 				{
+					game_map._Block[i][j] = game_map.ComputNums(i, j);
 					game_map._vis[i][j] = true;
 				}
 			}
@@ -386,6 +387,8 @@ void Lclick(int x, int y, HWND hwnd)
 
 void Rclick(int x, int y, HWND hwnd)
 {
+	if (game_map.game_state == 0)
+		return;
 	int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
 		{1, 0}, {0, 1}, {0, -1}, {-1, 0}, {-1, -1} };
 	if (x > 40)
@@ -407,7 +410,7 @@ void Rclick(int x, int y, HWND hwnd)
 		}
 		else if (game_map._vis[x][y] == true)
 		{
-			if (game_map.ComputNums(x, y) == game_map.ComputFlag(x, y)) 
+			if (game_map.ComputNums(x, y) <= game_map.ComputFlag(x, y)) 
 			{
 				for (int i = 0; i < 8; i++)
 				{
