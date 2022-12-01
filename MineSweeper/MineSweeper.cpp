@@ -18,6 +18,8 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    Setting(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK	Rankboard(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK	Congratulat(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 					 _In_opt_ HINSTANCE hPrevInstance,
@@ -117,6 +119,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				GameRestart();
 				InvalidateRect(hWnd, NULL, TRUE);
 				break;
+			case IDM_RANKS:
+				DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG2), hWnd, Rankboard);
+				break;
 			case IDM_BEGINNER:
 				SetGame(10, 10, 10);
 				GameRestart();
@@ -160,12 +165,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				x = GET_Y_LPARAM(lParam);
 			}
 			Lclick(x, y, hWnd);
-			//RECT bloClient;
-			//GetClientRect(hWnd, &bloClient);
-			//SetRect(&bloClient, bloClient.left, bloClient.top + 25, bloClient.right, bloClient.bottom);
-
 			InvalidateRect(hWnd, NULL, TRUE);
-			//UpdateWindow(hWnd);
+			if (GetGame(4) == 2)
+			{
+				if (IfnewFirst(GetGame(5)))
+				{
+					DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, Congratulat);
+				}
+			}
 		}
 		break;
 	case WM_RBUTTONDOWN:
@@ -178,8 +185,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			Rclick(x, y, hWnd);
 			MapPainting(hWnd);
-			InvalidateRect(hWnd, NULL, TRUE);
-			//UpdateWindow(hWnd);
+			InvalidateRect(hWnd, NULL, TRUE); 
+			if (GetGame(4) == 2)
+			{
+				if (IfnewFirst(GetGame(5)))
+				{
+					DialogBox(hInst, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, Congratulat);
+				}
+			}
 		}
 		break;
 	case WM_PAINT:
@@ -213,6 +226,74 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		if (LOWORD(wParam) == IDC_BUTTON1) {
 			system("start https://github.com/TcMcKrLiTb/MineSweeper");
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK Congratulat(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) 
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		else if (LOWORD(wParam) == IDOK)
+		{
+			wchar_t* stri;
+			stri = (wchar_t*)malloc(sizeof(wchar_t) * 20);
+			if (stri != NULL)
+				GetDlgItemTextW(hDlg, IDC_EDIT2, stri, 10);
+			AddnewScore(GetGame(5), stri);
+			EndDialog(hDlg, LOWORD(wParam));
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK Rankboard(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) 
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+	{
+		_Ranker tmp = { 0, {0} };
+		wchar_t* stri;
+		stri = (wchar_t*)malloc(sizeof(wchar_t) * 5);
+		if (stri != NULL)
+			memset(stri, 0, sizeof(stri));
+		for (int i = 1; i <= 3; i++)
+		{
+			for (int j = 1; j <= 3; j++)
+			{
+				tmp = GetRanker(i, j);
+				if (tmp.usrtime != -1)
+				{
+					SetDlgItemTextW(hDlg, 1008 + (i - 1) * 6 + j, tmp.usrname);
+					InttoStr(tmp.usrtime, stri);
+					if (stri != NULL)
+						SetDlgItemTextW(hDlg, 1008 + (i - 1) * 6 + j + 3, stri);
+				}
+			}
+		}
+		free(stri);
+	}
+		break;
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
 		}
 		break;
 	}

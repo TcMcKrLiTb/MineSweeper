@@ -23,3 +23,17 @@ typedef struct _blocks
 	int Bombnum();
 	bool JudgeisWin();
 }_Blocks, *_pBlocks;
+
+typedef struct ranker
+{
+	int usrtime;
+	wchar_t usrname[20];
+	bool operator<(const ranker& y)const
+	{
+		return this->usrtime < y.usrtime;
+	}
+	bool operator>(const ranker& y)const
+	{
+		return this->usrtime > y.usrtime;
+	}
+}_Ranker, *_pRanker;

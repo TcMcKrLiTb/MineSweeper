@@ -25,7 +25,7 @@ bool _blocks::JudgeisWin()
 	}
 	if ((cnt1 + cnt2) == (size_col * size_row) || 
 		(size_row * size_col - cnt1) == tot_bomb ||
-		flag == true)
+		flag == 1)
 	{
 		return true;
 	}

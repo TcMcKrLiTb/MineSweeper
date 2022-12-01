@@ -13,6 +13,7 @@ HBITMAP g_hbmBut[4] = { NULL };
 HANDLE hHandle = NULL;
 HANDLE TimerID_1s = NULL;
 _Blocks game_map;
+std::vector <_Ranker> __Easy, __Normal, __Hard;
 int allNums[7];
 int __ROW__ = 10, __COL__ = 10, __MINE__ = 10;
 //int step[8][2] = { {1, 1}, {1, -1}, {-1, 1},
@@ -170,6 +171,72 @@ void StrtoInt(int* x, wchar_t* str)
 	}
 }
 
+int GetMode()
+{
+	if (__MINE__ == 10 && __COL__ == 10 && __ROW__ == 10)
+	{
+		return 1;
+	}
+	else if (__MINE__ == 40 && __COL__ == 16 && __ROW__ == 16)
+	{
+		return 2;
+	}
+	else if (__MINE__ == 99 && __COL__ == 30 && __ROW__ == 16)
+	{
+		return 3;
+	}
+	return 0;
+}
+
+void AddnewScore(int utime, wchar_t* uname)
+{
+	_Ranker tmp = { utime, {0} };
+	switch (GetMode())
+	{
+	case 1:
+		memcpy(tmp.usrname, uname, sizeof(char) * 20);
+		__Easy.push_back(tmp);
+		std::sort(__Easy.begin(), __Easy.end());
+		break;
+	case 2:
+		memcpy(tmp.usrname, uname, sizeof(char) * 20);
+		__Normal.push_back(tmp);
+		std::sort(__Normal.begin(), __Normal.end());
+		break;
+	case 3:
+		memcpy(tmp.usrname, uname, sizeof(char) * 20);
+		__Hard.push_back(tmp);
+		std::sort(__Hard.begin(), __Hard.end());
+		break;
+	}
+}
+
+bool IfnewFirst(int utime)
+{
+	if (__MINE__ == 10 && __COL__ == 10 && __ROW__ == 10)
+	{
+		if (__Easy.empty() || __Easy.size() < 3)
+			return true;
+		else if (utime <= __Easy[2].usrtime)
+			return true;
+	}
+	if (__MINE__ == 40 && __COL__ == 16 && __ROW__ == 16)
+	{
+		if (__Normal.empty() || __Normal.size() < 3)
+			return true;
+		else if (utime <= __Normal[2].usrtime)
+			return true;
+	}
+	if (__MINE__ == 99 && __COL__ == 30 && __ROW__ == 16)
+	{
+		if (__Hard.empty() || __Hard.size() < 3)
+			return true;
+		else if (utime <= __Hard[2].usrtime)
+			return true;
+	}
+	return false;
+}
+
 void InitNUMPADs()
 {
 	g_hbmNum[0] = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(164));
@@ -295,8 +362,41 @@ int GetGame(int choose)
 	case 3:
 		return __MINE__;
 		break;
+	case 4:
+		return game_map.game_state;
+		break;
+	case 5:
+		return game_map.time_now;
+		break;
 	}
 	return 0;
+}
+
+_Ranker GetRanker(int opt, int rank)
+{
+	switch (opt) {
+	case 1:
+		if (__Easy.size() < rank)
+		{
+			return { -1, {0} };
+		}
+		return __Easy[static_cast<std::vector<_Ranker, std::allocator<_Ranker>>::size_type>(rank) - 1];
+		break;
+	case 2:
+		if (__Normal.size() < rank)
+		{
+			return { -1, {0} };
+		}
+		return __Normal[static_cast<std::vector<_Ranker, std::allocator<_Ranker>>::size_type>(rank) - 1];
+		break;
+	case 3:
+		if (__Hard.size() < rank)
+		{
+			return { -1, {0} };
+		}
+		return __Hard[static_cast<std::vector<_Ranker, std::allocator<_Ranker>>::size_type>(rank) - 1];
+		break;
+	}
 }
 
 VOID CALLBACK TimerRoutine(PVOID lpParam, BOOLEAN TimerOrWaitFired) {
