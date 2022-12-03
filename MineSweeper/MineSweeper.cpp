@@ -165,6 +165,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				x = GET_Y_LPARAM(lParam);
 			}
 			Lclick(x, y, hWnd);
+			if (x > 40 && GetGame(4) == 2)
+			{
+				break;
+			}
 			InvalidateRect(hWnd, NULL, TRUE);
 			if (GetGame(4) == 2)
 			{
@@ -182,6 +186,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				y = LOWORD(lParam);
 				x = HIWORD(lParam);
+			}
+			if (x > 40 && GetGame(4) == 2)
+			{
+				break;
 			}
 			Rclick(x, y, hWnd);
 			MapPainting(hWnd);
